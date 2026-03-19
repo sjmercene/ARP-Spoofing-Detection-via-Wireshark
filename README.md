@@ -1,74 +1,73 @@
-# 🔐 VNC Exploitation & Traffic Analysis
+# 📡 ARP Spoofing Detection Lab (Wireshark)
 
 ## 📌 Overview
-This project documents a hands-on cybersecurity lab completed on TryHackMe.  
-The objective was to identify exposed services, gain access to a target system, extract sensitive data, and analyse captured network traffic using Wireshark.
+This project documents a network traffic analysis investigation to detect an ARP spoofing (Man-in-the-Middle) attack.  
+The objective was to analyse captured packets using Wireshark and identify abnormal ARP behaviour indicating malicious activity.
 
 ---
 
 ## 🎯 Objectives
-- Perform network reconnaissance  
-- Identify exposed services  
-- Gain access to a remote system  
-- Locate and extract sensitive files  
-- Analyse network traffic for useful data  
+- Analyse ARP traffic using Wireshark  
+- Identify abnormal ARP behaviour  
+- Detect signs of ARP spoofing (MITM attack)  
+- Investigate suspicious IP-to-MAC mappings  
+- Understand how attackers manipulate network traffic  
 
 ---
 
-## 🖥️ Environment
-- **Attacker Machine:** Kali Linux (VirtualBox)  
-- **VPN:** OpenVPN connection to TryHackMe lab network  
-- **Target Machine:** Linux system with exposed VNC service  
+##  Environment
+- **Tool:** Wireshark  
+- **Platform:** Kali Linux  
+- **Lab Environment:** TryHackMe  
 
 ---
 
-## 🔍 Reconnaissance
+##  Investigation
 
-### Nmap Scan
+### ARP Traffic Filtering
 ```bash
-nmap -T4 <target-ip>
+arp
 ```
-### Results
+ARP traffic was isolated to focus only on address resolution activity within the network.
 
-- 22/tcp → SSH  
-- 80/tcp → Web (WebSockify)  
-- 5901/tcp → VNC  
+###ARP Reply Analysis
+```bash
+arp.opcode == 2
+```
+ARP replies were analysed, as these are commonly used in spoofing attacks where attackers send forged responses.
 
-### Key Finding
+###Gateway Investigation
+```bash
+arp.opcode == 2 && arp.src.proto_ipv4 == 192.168.10.1
+```
+Filtering for the gateway IP revealed multiple MAC addresses associated with the same IP.
 
-Port 5901 indicated a VNC service, and port 80 revealed a WebSockify server, suggesting a web-based VNC interface.
+### Findings
+
+- Two different MAC addresses were observed claiming the same IP address:
+
+- Legitimate Gateway: 02:aa:bb:cc:00:01
+- Suspicious (Attacker): 02:fe:fe:fe:55:55
+- Indicators of ARP Spoofing
+- Duplicate IP-to-MAC mappings detected
+- Repeated ARP replies for the same IP
+- Presence of gratuitous ARP responses
+- High frequency of ARP traffic
+
+### Evidence
+Wireshark packet analysis showed repeated responses such as:
+"192.168.10.1 is at 02:fe:fe:fe:55:55"
+These responses were unsolicited and frequent, indicating spoofing behaviour.
 
 ## 📸 Screenshots
+ARP Traffic Overview
+![image](https://github.com/sjmercene/sjmercene/blob/a6a60f2962be7ea5fec76426c4065155db065e6f/ARP%20Traffic%20Overview.jpg)
+This screenshot shows ARP traffic after applying the arp filter, establishing a baseline of network communication.
 
-### Nmap Scan
-![image alt](https://github.com/sjmercene/sjmercene/blob/69432a4149acb3a7d91e2cd8d1b3023c84cca732/NmapScan.jpg)
-This scan identified three open ports on the target:
-- 22/tcp (SSH)
-- 80/tcp (WebSockify)
-- 5901/tcp (VNC)
+ARP Replies (Attack Focus)
+![image](https://github.com/sjmercene/sjmercene/blob/f1031afdf96173b08110ca2f28695f8310081222/ARP%20Replies.png)
+This view highlights ARP reply packets, which are commonly used by attackers to perform spoofing.
 
-The presence of port 5901 indicated a VNC service, suggesting potential remote desktop access.
-
-
-### VNC Access
-![image alt](https://github.com/sjmercene/sjmercene/blob/b4407705d5e2610533ae5c84c7f7b458407de8f0/VNC%20Viewer.png)
-
-The screenshot shows a successful connection to the target system via VNC.
-
-A remote desktop session was established after identifying the VNC service on port 5901. The login was successful using weak credentials (`root`), providing full graphical access to the system.
-
-This confirms that the VNC service was exposed and improperly secured, allowing unauthorized access.
-
-
-### ARP Traffic Analysis
-![image alt](https://github.com/sjmercene/sjmercene/blob/b4407705d5e2610533ae5c84c7f7b458407de8f0/ARP%20Traffic%20Overview.jpg)
-
-The screenshot displays captured ARP packets in Wireshark.
-
-The traffic shows standard ARP request and response behaviour:
-- “Who has [IP address]?” → ARP request  
-- “[IP address] is at [MAC address]” → ARP reply  
-
-This indicates normal network communication where devices resolve IP addresses to MAC addresses.
-
-No abnormal or suspicious ARP activity (such as duplicate replies or spoofing indicators) was observed during this capture.
+Gateway Investigation
+![image](https://github.com/sjmercene/sjmercene/blob/f1031afdf96173b08110ca2f28695f8310081222/Gateway%20Investigation.png)
+Multiple MAC addresses are shown for the same IP address, confirming suspicious activity.
