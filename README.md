@@ -30,11 +30,14 @@ arp
 ```
 ARP traffic was isolated to focus only on address resolution activity within the network.
 
+<br>
+
 ### ARP Reply Analysis
 ```bash
 arp.opcode == 2
 ```
 ARP replies were analysed, as these are commonly used in spoofing attacks where attackers send forged responses.
+<br>
 
 ### Gateway Investigation
 ```bash
@@ -53,29 +56,41 @@ Filtering for the gateway IP revealed multiple MAC addresses associated with the
 - Repeated ARP replies for the same IP
 - Presence of gratuitous ARP responses
 - High frequency of ARP traffic
+  
+<br>
 
-### Evidence
+## Evidence
 Wireshark packet analysis showed repeated responses such as:
 "192.168.10.1 is at 02:fe:fe:fe:55:55"
 These responses were unsolicited and frequent, indicating spoofing behaviour.
 
+<br>
+
+
 ## 📸 Screenshots
 ## ARP Traffic Overview
 ![image](https://github.com/sjmercene/sjmercene/blob/a6a60f2962be7ea5fec76426c4065155db065e6f/ARP%20Traffic%20Overview.jpg)
+<br>
 This screenshot shows ARP traffic after applying the arp filter, establishing a baseline of network communication.
+<br>
+
 
 ## ARP Replies (Attack Focus)
 ![image](https://github.com/sjmercene/sjmercene/blob/f1031afdf96173b08110ca2f28695f8310081222/ARP%20Replies.png)
+<br>
 ARP replies were analysed because they are commonly exploited in ARP spoofing attacks.
 In normal network behaviour:
 A device responds to an ARP request with its legitimate MAC address
 Each IP address should map to a single, consistent MAC address
 However, attackers can send forged ARP replies without being requested (gratuitous ARP), claiming:
 "192.168.10.1 is at attacker MAC"
+<br>
+
 
 ## Gateway Investigation
 ![image](https://github.com/sjmercene/sjmercene/blob/f1031afdf96173b08110ca2f28695f8310081222/Gateway%20Investigation.png)
-<br>The gateway (192.168.10.1) is a critical network device that routes traffic between the local network and external networks (e.g. the internet).
+<br>
+The gateway (192.168.10.1) is a critical network device that routes traffic between the local network and external networks (e.g. the internet).
 Because all outbound traffic passes through the gateway, it is a prime target for attackers performing Man-in-the-Middle (MITM) attacks.
 During analysis, multiple MAC addresses were observed claiming to be the gateway:
 - Legitimate MAC address
